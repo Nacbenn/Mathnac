@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      background-color: #f2f2f2;
+      font-family: 'Arial', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      text-align: center;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      background-color: white;
+    }
+
+    #logo {
+      font-size: 32px;
+      font-weight: bold;
+      color: #4285f4;
+    }
+
+    #questionContainer {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+
+    #answerInput {
+      font-size: 18px;
+      padding: 5px;
+      width: 200px;
+    }
+
+    #submitButton {
+      font-size: 16px;
+      padding: 10px;
+      cursor: pointer;
+      background-color: #4285f4;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+
+    #resultMessage {
+      font-size: 18px;
+      margin-top: 20px;
+    }
+  </style>
+  <title>MathBot</title>
+</head>
+<body>
+  <div class="container">
+    <div id="logo">MathBot</div>
+    <div id="questionContainer"></div>
+    <input type="text" id="answerInput" placeholder="Cevap">
+    <button id="submitButton" onclick="checkAnswer()">Cevapla</button>
+    <div id="resultMessage"></div>
+  </div>
+
+  <script>
+    var difficultyLevel = 1;
+    var correctAnswerCount = 0;
+    var successThreshold = 3;
+
+    var questionContainer = document.getElementById('questionContainer');
+    var resultMessage = document.getElementById('resultMessage');
+    var answerInput = document.getElementById('answerInput');
+
+    function generateQuestion() {
+      var num1, num2, operator;
+
+      if (difficultyLevel <= 3) {
+        num1 = Math.floor(Math.random() * (10 * difficultyLevel)) + 1;
+        num2 = Math.floor(Math.random() * (10 * difficultyLevel)) + 1;
+        operator = Math.random() < 0.5 ? '+' : '-';
+      } else if (difficultyLevel === 4) {
+        num1 = Math.floor(Math.random() * (5 * difficultyLevel)) + 1;
+        num2 = Math.floor(Math.random() * (5 * difficultyLevel)) + 1;
+        operator = '*';
+      } else if (difficultyLevel === 5) {
+        num2 = Math.floor(Math.random() * (3 * difficultyLevel)) + 1;
+        num1 = num2 * (Math.floor(Math.random() * (5 * difficultyLevel)) + 1);
+        operator = '/';
+      } else {
+        num1 = Math.floor(Math.random() * (5 * difficultyLevel)) + 1;
+        num2 = Math.floor(Math.random() * (5 * difficultyLevel)) + 1;
+        operator = '+';
+      }
+
+      questionContainer.textContent = num1 + ' ' + operator + ' ' + num2;
+    }
+
+    function increaseDifficulty() {
+      difficultyLevel++;
+    }
+
+    function speakInsult() {
+      var insults = [
+        'Ahaha, gerçekten mi? Bu kadar basit bir soruya mı takıldın?',
+        'Matematikteki becerilerin gerçekten çok özel.',
+        'Bu soruyu yanlış yapmak sana özgü bir yetenek gibi görünüyor.',
+        'Matematik de senin güçlü yönün gibi durmuyor.',
+        'Bu soruyu kaçırdın mı, yoksa zorluk seviyesi senin için çok mu yüksek?'
+      ];
+      var insult = insults[Math.floor(Math.random() * insults.length)];
+      resultMessage.textContent = 'Yanlış cevap! ' + insult;
+      readText(insult);
+    }
+
+    function readText(text) {
+      var speechSynthesis = window.speechSynthesis;
+      var utterance = new SpeechSynthesisUtterance(text);
+      speechSynthesis.speak(utterance);
+    }
+
+    function checkAnswer() {
+      if (answerInput.value.trim() === '') {
+        resultMessage.textContent = 'Lütfen bir cevap girin!';
+        return;
+      }
+
+      var userAnswer = parseFloat(answerInput.value);
+      var num1 = parseFloat(questionContainer.textContent.split(' ')[0]);
+      var num2 = parseFloat(questionContainer.textContent.split(' ')[2]);
+      var operator = questionContainer.textContent.split(' ')[1];
+      var correctAnswer;
+
+      if (operator === '+') {
+        correctAnswer = num1 + num2;
+      } else if (operator === '-') {
+        correctAnswer = num1 - num2;
+      } else if (operator === '*') {
+        correctAnswer = num1 * num2;
+      } else if (operator === '/') {
+        correctAnswer = num1 / num2;
+      }
+
+      if (userAnswer === correctAnswer) {
+        resultMessage.textContent = 'Tebrikler, doğru cevap!';
+        correctAnswerCount++;
+        if (correctAnswerCount >= successThreshold) {
+          resultMessage.textContent += ' Harika, başarı eşiğini geçtin!';
+          correctAnswerCount = 0;
+          increaseDifficulty();
+        }
+      } else {
+        speakInsult();
+        decreaseDifficulty();
+      }
+
+      generateQuestion();
+      answerInput.value = '';
+    }
+
+    function decreaseDifficulty() {
+      difficultyLevel = 1;
+    }
+
+    // Sayfa yüklendiğinde ilk soruyu oluştur
+    generateQuestion();
+  </script>
+</body>
+</html>
